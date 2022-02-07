@@ -187,9 +187,7 @@ bar.push(90);
 
 &emsp;&emsp;Vue3 采用了 Proxy 实现对象代理来替代对象劫持，由于 Proxy 在部分浏览器上无法完全 polyfill，所以必须调整框架整体的浏览器支持范围，因此只能在新的 Major 版本发布。
 
-### 核心实现
-
-&emsp;&emsp;
+### 1、核心实现
 
 ```JavaScript
 const foo = { bar: 1 };
@@ -204,9 +202,24 @@ const fooProxy = new Proxy(foo, {
         console.log('[proxy.getter] ', key, result);
         return result;
     },
+    deleteProperty: function(obj, key) {
+        const result = Reflect.deleteProperty(obj, key);
+        console.log('[proxy.delete]', key);
+        return result;
+    }
 });
 
 fooProxy.bar = 20; // [proxy.setter]  bar 20
 
 fooProxy.boo = 10; // [proxy.setter]  boo 10
+
+delete fooProxy.boo; // [proxy.delete] boo
 ```
+
+&emsp;&emsp;相比较 Object.defineProperty 方法，*Proxy 不需要针对对象具体的属性单独处理，从而可以节省 Object.keys 的遍历损耗*。
+
+&emsp;&emsp;
+
+### 数组
+
+### 新数据结构的支持

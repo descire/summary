@@ -19,6 +19,11 @@
                 const result = Reflect.get(obj, key);
                 console.log('[proxy.getter] ', key, result);
                 return result;
+            },
+            deleteProperty: function(obj, key) {
+                const result = Reflect.deleteProperty(obj, key);
+                console.log('[proxy.delete]', key);
+                return result;
             }
         });
 
