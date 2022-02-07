@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function defineReactive(target, key, val) {
+            const property = Object.getOwnPropertyDescriptor(target, key)
+            if (property && property.configurable === false) {
+                return
+            }
+
+            const getter = property && property.get;
+            const setter = property && property.set;
+            if ((!getter || setter) && arguments.length === 2) {
+                val = target[key]
+            }
+
+            Object.defineProperty(target, key, {
+                enumerable: true,
+                configurable: true,
+                get: function reactiveGetter () {
+                    console.log('[getter] 属性 key: ', key);
+                    const value = getter ? getter.call(target) : val;
+                    return value;
+                },
+                set: function reactiveSetter (newVal) {
+                    console.log('[setter] 属性 key: ', key, newVal);
+                    const value = getter ? getter.call(obj) : val
+                    if (newVal === value || (newVal !== newVal && value !== value)) {
+                        return
+                    }
+                    if (getter && !setter) return
+                    if (setter) {
+                        setter.call(obj, newVal)
+                    } else {
+                        val = newVal
+                    }
+                }
+            });
+        }
+
+        // const obj = { foo: 1 };
+
+        // Object.keys(obj).forEach(key => defineReactive(obj, key));
+
+        // obj.foo = 100; // [setter] 属性 key:  foo 100
+        // obj.foo; // [getter] 属性 key:  foo
+
+        const obj = [1, 2, 3]
+
+        Object.keys(obj).forEach(key => defineReactive(obj, key));
+
+        obj[3] = 20
+
+
+        const arrayMethods = Object.create(Array.prototype);
+        function patchToArrayPushMethod () {
+            const original = arrayMethods['push'];
+            Object.defineProperty(arrayMethods, 'push', {
+            value: function mutator (...args) {
+                const result = original.apply(this, args);
+                console.log('[array.push] 拦截 push 方法：', args);
+                return result;
+            },
+            enumerable: true,
+            writable: true,
+            configurable: true
+            });
+        }
+
+        patchToArrayPushMethod();
+
+        const bar = [];
+
+        // 改变数组对象的原型链
+        bar.__proto__ = arrayMethods;
+
+        bar.push(90);
+
+    </script>
+</body>
+</html>
